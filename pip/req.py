@@ -801,6 +801,10 @@ exec(compile(getattr(tokenize, 'open', open)(__file__).read().replace('\\r\\n', 
                 return True
             else:
                 self.satisfied_by = pkg_resources.get_distribution(self.req)
+
+            if self.editable and self.satisfied_by:
+                self.conflicts_with = self.satisfied_by
+                return True
         except pkg_resources.DistributionNotFound:
             return False
         except pkg_resources.VersionConflict:
@@ -1367,6 +1371,8 @@ class RequirementSet(object):
                     except pkg_resources.DistributionNotFound:
                         # distribute wasn't installed, so nothing to do
                         pass
+
+                requirement.check_if_exists()
 
                 if requirement.conflicts_with:
                     logger.notify('Found existing installation: %s'
