@@ -288,6 +288,22 @@ class RequirementSet(object):
                         req_to_install.archive(self.download_dir)
                     else:
                         req_to_install.run_egg_info()
+
+                    import pdb; pdb.set_trace()    # marc
+                    # req_to_install.pkg_info()['name']
+                    if not self.ignore_installed:
+                        req_to_install.req.project_name = req_to_install.pkg_info()['name']
+                        req_to_install.check_if_exists()
+                    if req_to_install.satisfied_by:
+                        if self.upgrade or self.ignore_installed:
+                            # don't uninstall conflict if user install and
+                            # conflict is not user install
+                            if not (self.use_user_site
+                                    and not dist_in_usersite(
+                                        req_to_install.satisfied_by)):
+                                req_to_install.conflicts_with = \
+                                    req_to_install.satisfied_by
+                            req_to_install.satisfied_by = None
                 elif install:
                     ##@@ if filesystem packages are not marked
                     ##editable in a req, a non deterministic error
@@ -448,6 +464,7 @@ class RequirementSet(object):
                 # sdists
                 elif not is_bundle:
                     ## FIXME: shouldn't be globally added:
+                    import pdb; pdb.set_trace()    # marc
                     finder.add_dependency_links(
                         req_to_install.dependency_links
                     )
