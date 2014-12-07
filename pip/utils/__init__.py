@@ -422,22 +422,31 @@ def get_installed_distributions(local_only=True,
 
 
 def get_recursive_dependencies(*names):
+    graph = get_dependency_graph(names)
+    ret = set()
+    for value in graph.values():
+        for dep in value:
+            ret.add(dep)
+    return ret
+
+
+def get_dependency_graph(names, dependencies=None):
     """Return set of dependencies of dists in ``names``, recursively."""
-    dependencies = set()
+    from collections import defaultdict
+    if dependencies is None:
+        dependencies = defaultdict(set)
     installed = dict(
         [(p.project_name.lower(), p) for p in pkg_resources.working_set])
     query_names = [name.lower() for name in names]
     for pkg in query_names:
-        try:
-            dist = installed[pkg]
-        except KeyError:
-            pass  # pkg is not installed.
-        else:
+        dist = installed.get(pkg)
+        if dist:
             for dep in dist.requires():
                 name = dep.project_name
-                dependencies.add(name)
-                dependencies.update(get_recursive_dependencies(name))
-    return dependencies
+                dependencies[pkg].add(name)
+                dependencies.update(
+                    get_dependency_graph(name, dependencies))
+    return dict(dependencies)
 
 
 def egg_link_path(dist):

@@ -109,7 +109,8 @@ class FreezeCommand(Command):
             # Freeze only a subset of installed packages.
             only_dists = args
             if recursive:  # Freeze dependencies, recursively.
-                only_dists.extend(get_recursive_dependencies(*only_dists))
+                recursive_dependencies = get_recursive_dependencies(*only_dists)
+                only_dists.extend(recursive_dependencies)
             only_dists = [name.lower() for name in only_dists]
 
         for dist in get_installed_distributions(local_only=local_only,
