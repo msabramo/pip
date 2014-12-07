@@ -4,7 +4,7 @@ import logging
 import os
 
 from pip.basecommand import Command
-from pip.utils import get_recursive_dependencies
+from pip.utils import get_recursive_dependencies, get_dependency_graph
 from pip._vendor import pkg_resources
 
 
@@ -76,6 +76,19 @@ def search_packages_info(query):
         yield package
 
 
+def get_recursive_dep_list(pkg):
+    graph = get_dependency_graph(pkg)
+    items = []
+    maxlen = max([len(p) for p, v in graph.items() if v])
+
+    for p, v in sorted(graph.items()):
+        if v:
+            items.append(('    %-' + str(maxlen + 2) + 's => %s')
+                         % (p, ', '.join(v)))
+
+    return '\n'.join(items)
+
+
 def print_results(distributions, list_all_files):
     """
     Print the informations from installed distributions found.
@@ -86,8 +99,8 @@ def print_results(distributions, list_all_files):
         logger.info("Version: %s" % dist['version'])
         logger.info("Location: %s" % dist['location'])
         logger.info("Requires: %s" % ', '.join(dist['requires']))
-        logger.info("Requires recursive: %s" % ', '.join(
-            get_recursive_dependencies(dist['name'])))
+        logger.info("Requires recursive:\n%s",
+                    get_recursive_dep_list(dist['name']))
         if list_all_files:
             logger.info("Files:")
             if dist['files'] is not None:
