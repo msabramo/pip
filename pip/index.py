@@ -87,6 +87,9 @@ class PackageFinder(object):
             list(LOCAL_HOSTNAMES) +
             trusted_hosts)
 
+        # Hosts that we've alredy warned about not using HTTPS
+        self.warned_about_insecure_transport_schema_hosts = set()
+
         # Stores if we ignored any external links so that we can instruct
         #   end users how to install them if no distributions are available
         self.need_warn_external = False
@@ -211,6 +214,11 @@ class PackageFinder(object):
                 # hostnames for which we won't warn
                 # defaults to localhost only, but user can add more
                 pass
+            elif parsed.hostname in \
+                    self.warned_about_insecure_transport_schema_hosts:
+                # already warned about this host
+                # we emit warning once so it's not super annoying
+                pass
             elif len(secure_schemes) == 1:
                 ctx = (location, parsed.scheme, secure_schemes[0],
                        parsed.netloc)
@@ -234,6 +242,9 @@ class PackageFinder(object):
                 ctx = (location, parsed.scheme)
                 logger.warn("%s uses an insecure transport scheme (%s)." %
                             ctx)
+
+            self.warned_about_insecure_transport_schema_hosts.add(
+                parsed.hostname)
 
     def find_requirement(self, req, upgrade):
 
