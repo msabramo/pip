@@ -535,21 +535,26 @@ def _download_url(resp, link, content_file):
 
         progress_indicator = lambda x, *a, **k: x
 
+        if link.netloc == 'pypi.python.org':
+            url = show_url
+        else:
+            url = link.url_without_fragment
+
         if show_progress:  # We don't show progress on cached responses
             if total_length:
                 logger.info(
-                    "Downloading %s (%s)", show_url, format_size(total_length),
+                    "Downloading %s (%s)", url, format_size(total_length),
                 )
                 progress_indicator = DownloadProgressBar(
                     max=total_length,
                 ).iter
             else:
-                logger.info("Downloading %s", show_url)
+                logger.info("Downloading %s", url)
                 progress_indicator = DownloadProgressSpinner().iter
         elif cached_resp:
-            logger.info("Using cached %s", show_url)
+            logger.info("Using cached %s", url)
         else:
-            logger.info("Downloading %s", show_url)
+            logger.info("Downloading %s", url)
 
         logger.debug('Downloading from URL %s', link)
 

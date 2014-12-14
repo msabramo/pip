@@ -1115,6 +1115,10 @@ class Link(object):
         return urllib_parse.urlsplit(self.url)[0]
 
     @property
+    def netloc(self):
+        return urllib_parse.urlsplit(self.url)[1]
+
+    @property
     def path(self):
         return urllib_parse.urlsplit(self.url)[2]
 
