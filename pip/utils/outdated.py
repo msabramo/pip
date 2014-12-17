@@ -10,8 +10,8 @@ from pip._vendor import lockfile
 from pip._vendor import pkg_resources
 
 from pip.compat import total_seconds
-from pip.index import PyPI
 from pip.locations import USER_CACHE_DIR, running_under_virtualenv
+from pip.models import PyPI
 
 
 SELFCHECK_DATE_FMT = "%Y-%m-%dT%H:%M:%SZ"

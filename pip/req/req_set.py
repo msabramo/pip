@@ -6,13 +6,14 @@ import os
 from pip._vendor import pkg_resources
 from pip._vendor import requests
 
-from pip.download import (url_to_path, unpack_url)
+from pip.download import unpack_url
 from pip.exceptions import (InstallationError, BestVersionAlreadyInstalled,
                             DistributionNotFound, PreviousBuildDirError)
 from pip.locations import (PIP_DELETE_MARKER_FILENAME, build_prefix)
 from pip.req.req_install import InstallRequirement
 from pip.utils import (display_path, rmtree, dist_in_usersite,
                        _make_build_dir, normalize_path)
+from pip.utils import url_to_path
 from pip.utils.logging import indent_log
 from pip.vcs import vcs
 from pip.wheel import wheel_ext

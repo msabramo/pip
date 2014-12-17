@@ -12,9 +12,10 @@ import pytest
 import pip
 from pip.exceptions import HashMismatch
 from pip.download import (
-    PipSession, SafeFileCache, path_to_url, unpack_http_url, url_to_path,
+    PipSession, SafeFileCache, unpack_http_url,
     unpack_file_url,
 )
+from pip.utils import path_to_url, url_to_path
 from pip.index import Link
 
 

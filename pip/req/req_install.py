@@ -20,7 +20,6 @@ from pip._vendor.six.moves.urllib import parse as urllib_parse
 import pip.wheel
 
 from pip.compat import native_str, WINDOWS
-from pip.download import is_url, url_to_path, path_to_url, is_archive_file
 from pip.exceptions import (
     InstallationError, UninstallationError, UnsupportedWheel,
 )
@@ -32,6 +31,7 @@ from pip.utils import (
     dist_in_usersite, dist_in_site_packages, egg_link_path, make_path_relative,
     call_subprocess, read_text_file, FakeFile, _make_build_dir,
 )
+from pip.utils import is_url, url_to_path, path_to_url, is_archive_file
 from pip.utils.logging import indent_log
 from pip.req.req_uninstall import UninstallPathSet
 from pip.vcs import vcs

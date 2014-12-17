@@ -12,8 +12,8 @@ except ImportError:
     import urlparse as urllib_parse
 
 from pip.utils import rmtree, display_path, call_subprocess
+from pip.utils import path_to_url
 from pip.vcs import vcs, VersionControl
-from pip.download import path_to_url
 
 
 logger = logging.getLogger(__name__)

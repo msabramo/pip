@@ -15,13 +15,13 @@ from pip._vendor.six.moves.urllib import request as urllib_request
 
 from pip.compat import ipaddress
 from pip.utils import Inf, cached_property, normalize_name, splitext
+from pip.utils import url_to_path, path_to_url
 from pip.utils.deprecation import RemovedInPip7Warning, RemovedInPip8Warning
 from pip.utils.logging import indent_log
 from pip.exceptions import (
     DistributionNotFound, BestVersionAlreadyInstalled, InvalidWheelFilename,
     UnsupportedWheel,
 )
-from pip.download import url_to_path, path_to_url
 from pip.wheel import Wheel, wheel_ext
 from pip.pep425tags import supported_tags, supported_tags_noarch, get_platform
 from pip.req.req_requirement import InstallationCandidate
@@ -45,21 +45,6 @@ SECURE_ORIGINS = [
 
 
 logger = logging.getLogger(__name__)
-
-
-class Index(object):
-    def __init__(self, url):
-        self.url = url
-        self.netloc = urllib_parse.urlsplit(url).netloc
-        self.simple_url = self.url_to_path('simple')
-        self.pypi_url = self.url_to_path('pypi')
-        self.pip_json_url = self.url_to_path('pypi/pip/json')
-
-    def url_to_path(self, path):
-        return urllib_parse.urljoin(self.url, path)
-
-
-PyPI = Index('https://pypi.python.org/')
 
 
 class PackageFinder(object):

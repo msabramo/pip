@@ -21,8 +21,10 @@ import pip
 from pip.exceptions import InstallationError, HashMismatch
 from pip.utils import (splitext, rmtree, format_size, display_path,
                        backup_dir, ask_path_exists, unpack_file)
+from pip.utils import url_to_path
 from pip.utils.ui import DownloadProgressBar, DownloadProgressSpinner
 from pip.locations import write_delete_marker_file
+from pip.models import PyPI
 from pip.vcs import vcs
 from pip._vendor import requests, six
 from pip._vendor.requests.adapters import BaseAdapter, HTTPAdapter
@@ -356,58 +358,6 @@ _scheme_re = re.compile(r'^(http|https|file):', re.I)
 _url_slash_drive_re = re.compile(r'/*([a-z])\|', re.I)
 
 
-def is_url(name):
-    """Returns true if the name looks like a URL"""
-    if ':' not in name:
-        return False
-    scheme = name.split(':', 1)[0].lower()
-    return scheme in ['http', 'https', 'file', 'ftp'] + vcs.all_schemes
-
-
-def url_to_path(url):
-    """
-    Convert a file: URL to a path.
-    """
-    assert url.startswith('file:'), (
-        "You can only turn file: urls into filenames (not %r)" % url)
-    path = url[len('file:'):].lstrip('/')
-    path = urllib_parse.unquote(path)
-    if _url_drive_re.match(path):
-        path = path[0] + ':' + path[2:]
-    else:
-        path = '/' + path
-    return path
-
-
-_drive_re = re.compile('^([a-z]):', re.I)
-_url_drive_re = re.compile('^([a-z])[:|]', re.I)
-
-
-def path_to_url(path):
-    """
-    Convert a path to a file: URL.  The path will be made absolute and have
-    quoted path parts.
-    """
-    path = os.path.normpath(os.path.abspath(path))
-    drive, path = os.path.splitdrive(path)
-    filepath = path.split(os.path.sep)
-    url = '/'.join([urllib_parse.quote(part) for part in filepath])
-    if not drive:
-        url = url.lstrip('/')
-    return 'file:///' + drive + url
-
-
-def is_archive_file(name):
-    """Return True if `name` is a considered as an archive file."""
-    archives = (
-        '.zip', '.tar.gz', '.tar.bz2', '.tgz', '.tar', '.whl'
-    )
-    ext = splitext(name)[1].lower()
-    if ext in archives:
-        return True
-    return False
-
-
 def unpack_vcs_link(link, location, only_download=False):
     vcs_backend = _get_used_vcs_backend(link)
     if only_download:
@@ -535,7 +485,7 @@ def _download_url(resp, link, content_file):
 
         progress_indicator = lambda x, *a, **k: x
 
-        if link.netloc == 'pypi.python.org':
+        if link.netloc == PyPI.netloc:
             url = show_url
         else:
             url = link.url_without_fragment

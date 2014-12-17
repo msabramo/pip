@@ -22,6 +22,7 @@ from pip.locations import (
 from pip._vendor import pkg_resources, six
 from pip._vendor.six.moves import input
 from pip._vendor.six.moves import cStringIO
+from pip._vendor.six.moves.urllib import parse as urllib_parse
 from pip._vendor.six import PY2
 
 if PY2:
@@ -42,6 +43,9 @@ __all__ = ['rmtree', 'display_path', 'backup_dir',
 
 
 logger = logging.getLogger(__name__)
+
+_drive_re = re.compile('^([a-z]):', re.I)
+_url_drive_re = re.compile('^([a-z])[:|]', re.I)
 
 
 def get_prog():
@@ -292,6 +296,54 @@ def normalize_path(path):
 
     """
     return os.path.normcase(os.path.realpath(os.path.expanduser(path)))
+
+
+def is_url(name):
+    """Returns true if the name looks like a URL"""
+    if ':' not in name:
+        return False
+    scheme = name.split(':', 1)[0].lower()
+    return scheme in ['http', 'https', 'file', 'ftp'] + vcs.all_schemes
+
+
+def url_to_path(url):
+    """
+    Convert a file: URL to a path.
+    """
+    assert url.startswith('file:'), (
+        "You can only turn file: urls into filenames (not %r)" % url)
+    path = url[len('file:'):].lstrip('/')
+    path = urllib_parse.unquote(path)
+    if _url_drive_re.match(path):
+        path = path[0] + ':' + path[2:]
+    else:
+        path = '/' + path
+    return path
+
+
+def path_to_url(path):
+    """
+    Convert a path to a file: URL.  The path will be made absolute and have
+    quoted path parts.
+    """
+    path = os.path.normpath(os.path.abspath(path))
+    drive, path = os.path.splitdrive(path)
+    filepath = path.split(os.path.sep)
+    url = '/'.join([urllib_parse.quote(part) for part in filepath])
+    if not drive:
+        url = url.lstrip('/')
+    return 'file:///' + drive + url
+
+
+def is_archive_file(name):
+    """Return True if `name` is a considered as an archive file."""
+    archives = (
+        '.zip', '.tar.gz', '.tar.bz2', '.tgz', '.tar', '.whl'
+    )
+    ext = splitext(name)[1].lower()
+    if ext in archives:
+        return True
+    return False
 
 
 def splitext(path):
