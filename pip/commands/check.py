@@ -41,11 +41,11 @@ class CheckCommand(Command):
         `installed_dists`.
 
         """
-        installed_names = set(d.project_name for d in installed_dists)
+        installed_names = set(d.project_name.lower() for d in installed_dists)
 
         missing_requirements = set()
         for requirement in dist.requires():
-            if requirement.project_name not in installed_names:
+            if requirement.project_name.lower() not in installed_names:
                 missing_requirements.add(requirement)
                 yield requirement
 
