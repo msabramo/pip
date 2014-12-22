@@ -16,7 +16,7 @@ class CheckCommand(Command):
     def run(self, options, args):
         all_requirements_met = True
 
-        installed = get_installed_distributions()
+        installed = get_installed_distributions(skip=())
         for dist in installed:
 
             missing_requirements = self.get_missing_requirements(dist, installed)
