@@ -12,10 +12,30 @@ def test_check_missing_dependency(script):
 
     # deliberately remove the dependency
     script.pip('uninstall', 'ipython', '--yes')
-    
+
     result = script.pip('check', expect_error=True, expect_stderr=True)
 
     assert result.stderr == "ipdb 0.7 requires ipython, which is not installed.\n"
+    assert result.returncode == 1
+
+
+def test_check_missing_dependency_normalize_case(script):
+    # Install some things
+    script.pip('install', 'pdbpp==0.7.2')
+    script.pip('install', 'bpython==0.13.1')
+    script.pip('install', 'devpi-web==2.2.2')
+    script.pip('install', 'pyramid==1.5.2')
+
+    # deliberately remove some dependencies
+    script.pip('uninstall', 'pygments', '--yes')
+    script.pip('uninstall', 'zope.deprecation', '--yes')
+
+    result = script.pip('check', expect_error=True, expect_stderr=True)
+
+    assert 'pdbpp 0.7.2 requires pygments, which is not installed.' in result.stdout
+    assert 'bpython 0.13.1 requires pygments, which is not installed.' in result.stdout
+    assert 'devpi-web 2.2.2 requires pygments, which is not installed.' in result.stdout
+    assert 'pyramid 1.5.2 requires zope.deprecation, which is not installed.' in result.stdout
     assert result.returncode == 1
 
 
@@ -25,7 +45,7 @@ def test_check_broken_dependency(script):
 
     # deliberately change dependency to a version that is too old
     script.pip('install', 'jinja2==2.3')
-    
+
     result = script.pip('check', expect_error=True, expect_stderr=True)
 
     assert result.stderr == "Flask 0.10.1 has requirement Jinja2>=2.4, but you have Jinja2 2.3.\n"
