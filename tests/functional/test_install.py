@@ -13,12 +13,14 @@ from tests.lib.local_repos import local_checkout
 from tests.lib.path import Path
 
 
-@pytest.mark.network
-def test_without_setuptools(script):
+def test_without_setuptools(script, data):
     script.run("pip", "uninstall", "setuptools", "-y")
     result = script.run(
         "python", "-c",
-        "import pip; pip.main(['install', 'INITools==0.2', '--no-use-wheel'])",
+        "import pip; pip.main(["
+        "    'install', 'INITools==0.2', "
+        "    '--no-use-wheel', "
+        "    '--find-links', '%s'])" % (data.source / 'packages'),
         expect_error=True,
     )
     assert (
@@ -27,13 +29,13 @@ def test_without_setuptools(script):
     )
 
 
-@pytest.mark.network
-def test_pip_second_command_line_interface_works(script):
+def test_pip_second_command_line_interface_works(script, data):
     """
     Check if ``pip<PYVERSION>`` commands behaves equally
     """
     args = ['pip%s' % pyversion]
     args.extend(['install', 'INITools==0.2'])
+    args.extend(['--find-links', data.source / 'packages'])
     result = script.run(*args)
     egg_info_folder = (
         script.site_packages / 'INITools-0.2-py%s.egg-info' % pyversion
@@ -43,12 +45,13 @@ def test_pip_second_command_line_interface_works(script):
     assert initools_folder in result.files_created, str(result)
 
 
-@pytest.mark.network
-def test_install_from_pypi(script):
+def test_install_from_pypi(script, data):
     """
     Test installing a package from PyPI.
     """
-    result = script.pip('install', '-vvv', 'INITools==0.2')
+    args = ['install', '-vvv', 'INITools==0.2']
+    args.extend(['--find-links', data.source / 'packages'])
+    result = script.pip(*args)
     egg_info_folder = (
         script.site_packages / 'INITools-0.2-py%s.egg-info' % pyversion
     )
@@ -122,8 +125,7 @@ def test_download_editable_to_custom_path(script, tmpdir):
     assert customdl_files_created
 
 
-@pytest.mark.network
-def test_editable_no_install_followed_by_no_download(script, tmpdir):
+def test_editable_no_install_followed_by_no_download(script, tmpdir, data):
     """
     Test installing an editable in two steps (first with --no-install, then
     with --no-download).
@@ -157,8 +159,7 @@ def test_editable_no_install_followed_by_no_download(script, tmpdir):
     result.assert_installed('INITools', without_files=[curdir, '.svn'])
 
 
-@pytest.mark.network
-def test_no_install_followed_by_no_download(script):
+def test_no_install_followed_by_no_download(script, data):
     """
     Test installing in two steps (first with --no-install, then with
     --no-download).
