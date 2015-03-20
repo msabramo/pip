@@ -200,6 +200,24 @@ class InstallCommand(Command):
             session=session,
         )
 
+    def _build_requirement_set(self, build_dir, temp_target_dir,
+                               session, options):
+        return RequirementSet(
+            build_dir=build_dir,
+            src_dir=options.src_dir,
+            download_dir=options.download_dir,
+            upgrade=options.upgrade,
+            as_egg=options.as_egg,
+            ignore_installed=options.ignore_installed,
+            ignore_dependencies=options.ignore_dependencies,
+            force_reinstall=options.force_reinstall,
+            use_user_site=options.use_user_site,
+            target_dir=temp_target_dir,
+            session=session,
+            pycompile=options.compile,
+            isolated=options.isolated_mode,
+        )
+
     def run(self, options, args):
 
         if (
@@ -280,27 +298,13 @@ class InstallCommand(Command):
             )
 
         with self._build_session(options) as session:
-
             finder = self._build_package_finder(options, index_urls, session)
 
             build_delete = (not (options.no_clean or options.build_dir))
             with BuildDirectory(options.build_dir,
                                 delete=build_delete) as build_dir:
-                requirement_set = RequirementSet(
-                    build_dir=build_dir,
-                    src_dir=options.src_dir,
-                    download_dir=options.download_dir,
-                    upgrade=options.upgrade,
-                    as_egg=options.as_egg,
-                    ignore_installed=options.ignore_installed,
-                    ignore_dependencies=options.ignore_dependencies,
-                    force_reinstall=options.force_reinstall,
-                    use_user_site=options.use_user_site,
-                    target_dir=temp_target_dir,
-                    session=session,
-                    pycompile=options.compile,
-                    isolated=options.isolated_mode,
-                )
+                requirement_set = self._build_requirement_set(
+                    build_dir, temp_target_dir, session, options)
 
                 for name in args:
                     requirement_set.add_requirement(
